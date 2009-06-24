@@ -30,7 +30,9 @@ destination = File.expand_path ARGV[1]
 # Collect paths for all of the FLAC files in the source path.
 flac_paths = []
 Find.find(source) do |path|
-  flac_paths << path if File.extname(path).downcase == '.flac'
+  if !File.directory?(path) && File.extname(path).downcase == '.flac'
+    flac_paths << path
+  end
 end
 puts "Found #{flac_paths.size} FLAC files in #{source}"
 
