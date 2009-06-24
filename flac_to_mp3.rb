@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+#
 # Copyright (c) 2009 John Wulff <johnwulff@gmail.com> http://www.johnwulff.com
 # 
 # Permission is hereby granted, free of charge, to any person obtaining
