@@ -59,7 +59,7 @@ new_flac_paths.each_pair do |flac_path, mp3_path|
     `#{command}`
     raise "Exit status was #{$?.exitstatus}" if $?.exitstatus != 0
   rescue Interrupt => exception
-    File.delete output if File.exists?(output)
+    File.delete mp3_path if File.exists?(mp3_path)
     raise exception
   rescue Exception => exception
     File.delete output if File.exists?(output)
