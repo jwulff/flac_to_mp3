@@ -1,0 +1,12 @@
+DESCRIPTION:
+
+Ruby script that converts FLAC files to MP3 files preserving the directory structure.
+
+USAGE:
+
+> ./flac_to_mp3 ~/Downloads ~/Downloads/mp3s
+Found 2 FLAC files in /Users/john/Downloads
+Found 0 MP3 files in /Users/john/Downloads/mp3s
+Found 2 FLAC files that do not have MP3s.
+Converting /Users/john/Downloads/Autumn Beds/A1 - Autumn Beds.flac to /Users/john/Downloads/mp3s/Autumn Beds/A1 - Autumn Beds.mp3
+Converting /Users/john/Downloads/Autumn Beds/B1 - The Whale Song.flac to /Users/john/Downloads/mp3s/Autumn Beds/B1 - The Whale Song.mp3
