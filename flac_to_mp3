@@ -30,7 +30,12 @@ destination = File.expand_path ARGV[1]
 # Collect paths for all of the FLAC files in the source path.
 flac_paths = []
 Find.find(source) do |path|
-  if !File.directory?(path) && File.extname(path).downcase == '.flac'
+  # Make sure the path is not a directory
+  if !File.directory?(path)
+  # Make sure the path has a flac extension
+  && File.extname(path).downcase == '.flac'
+  # Make sure the path does not include a hidden directory
+  && !(path =~ /\/\./)
     flac_paths << path
   end
 end
@@ -53,7 +58,8 @@ end
 puts "Found #{new_flac_paths.size} FLAC files that do not have MP3s."
 
 exceptions = []
-new_flac_paths.each_pair do |flac_path, mp3_path|
+new_flac_paths.keys.sort do |flac_path|
+  mp3_path = new_flac_paths[flac_path]
   begin
     puts "Converting \e[33m#{flac_path}\e[0m to \e[32m#{mp3_path}\e[0m"
     command  = "mkdir -p '#{mp3_path.gsub(File.basename(mp3_path), '')}'"
