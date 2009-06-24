@@ -30,12 +30,9 @@ destination = File.expand_path ARGV[1]
 # Collect paths for all of the FLAC files in the source path.
 flac_paths = []
 Find.find(source) do |path|
-  # Make sure the path is not a directory
-  if !File.directory?(path)
-  # Make sure the path has a flac extension
-  && File.extname(path).downcase == '.flac'
-  # Make sure the path does not include a hidden directory
-  && !(path =~ /\/\./)
+  # Make sure the path is not a directory.  Make sure the path has a flac
+  # extension. Make sure the path does not include a hidden directory.
+  if !File.directory?(path) && File.extname(path).downcase == '.flac' && !(path =~ /\/\./)  
     flac_paths << path
   end
 end
