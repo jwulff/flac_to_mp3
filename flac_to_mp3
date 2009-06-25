@@ -54,7 +54,7 @@ begin
   # in the destination.
   new_flac_paths = {}
   flac_paths.each do |flac_path|
-    mp3_path = File.expand_path File.join(destination, flac_path.gsub(source, '').gsub('.flac', '.mp3'))
+    mp3_path = File.expand_path File.join(destination, flac_path.gsub(source, '').gsub(/\.flac/i, '.mp3'))
     if !done.include?(mp3_path)
       if mp3_paths.include?(mp3_path)
         done << mp3_path
@@ -65,7 +65,7 @@ begin
   end
   puts "Found #{new_flac_paths.size} FLAC files have not been processed."
   
-  exceptions = []
+  exceptions = {}
   new_flac_paths.keys.sort.each do |flac_path|
     mp3_path = new_flac_paths[flac_path]
     begin
@@ -80,7 +80,7 @@ begin
       raise exception
     rescue Exception => exception
       File.delete mp3_path if File.exists?(mp3_path)
-      exceptions << exception
+      exceptions[flac_path] = exception
       puts "EXCEPTION: #{exception.class} - #{exception}"
       puts "\tBACKTRACE:\n\t\t#{exception.backtrace.join("\n\t\t")}"
     end
@@ -89,4 +89,7 @@ ensure
   File.open(done_path, 'w') do |file|
     file.write done.to_yaml
   end
+  
+  puts ""
+  puts "The following FLAC files were not processed because of exceptions.\n\t#{exceptions.keys.sort.join("\n\t")}"
 end
