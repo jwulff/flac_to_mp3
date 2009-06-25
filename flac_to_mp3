@@ -73,7 +73,7 @@ begin
       command  = "mkdir -p #{mp3_path.gsub(File.basename(mp3_path), '').dump}"
       command << " && flac -dcs #{flac_path.dump} | lame --silent -V0 --vbr-new - #{mp3_path.dump}"
       `#{command}`
-      raise "Exit status was #{$?.exitstatus}" if $?.exitstatus != 0
+      raise "Exit status was #{$?.exitstatus} for command \e[31m#{command}\e[0m" if $?.exitstatus != 0
       done << mp3_path
     rescue Interrupt => exception
       File.delete mp3_path if File.exists?(mp3_path)
