@@ -54,7 +54,7 @@ begin
   # in the destination.
   new_flac_paths = {}
   flac_paths.each do |flac_path|
-    mp3_path = File.expand_path File.join(destination, flac_path.gsub(source, '').gsub(/\.flac/i, '.mp3'))
+    mp3_path = File.expand_path File.join(destination, flac_path.gsub(source, '').gsub(/\.flac$/i, '.mp3'))
     if !done.include?(mp3_path)
       if mp3_paths.include?(mp3_path)
         done << mp3_path
