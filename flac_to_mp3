@@ -27,49 +27,66 @@ require 'yaml'
 source      = File.expand_path ARGV[0]
 destination = File.expand_path ARGV[1]
 
-# Collect paths for all of the FLAC files in the source path.
-flac_paths = []
-Find.find(source) do |path|
-  # Make sure the path is not a directory.  Make sure the path has a flac
-  # extension. Make sure the path does not include a hidden directory.
-  if !File.directory?(path) && File.extname(path).downcase == '.flac' && !(path =~ /\/\./)  
-    flac_paths << path
+done_path = File.join destination, 'flac_to_mp3_done.yml'
+done      = YAML.load File.read(done_path) if File.exists?(done_path)
+done    ||= []
+
+begin
+  # Collect paths for all of the FLAC files in the source path.
+  flac_paths = []
+  Find.find(source) do |path|
+    # Make sure the path is not a directory.  Make sure the path has a flac
+    # extension. Make sure the path does not include a hidden directory.
+    if !File.directory?(path) && File.extname(path).downcase == '.flac' && !(path =~ /\/\./)  
+      flac_paths << path
+    end
   end
-end
-puts "Found #{flac_paths.size} FLAC files in #{source}"
-
-# Collect paths for all of the MP3 files in the destination path.
-mp3_paths = []
-Find.find(destination) do |path|
-  mp3_paths << path if File.extname(path).downcase == '.mp3'
-end
-puts "Found #{mp3_paths.size} MP3 files in #{destination}"
-
-# Determine which FLAC files in the source do not have corresponding MP3 files
-# in the destination.
-new_flac_paths = {}
-flac_paths.each do |flac_path|
-  mp3_path = File.expand_path File.join(destination, flac_path.gsub(source, '').gsub('.flac', '.mp3'))
-  new_flac_paths[flac_path] = mp3_path unless mp3_paths.include?(mp3_path)
-end
-puts "Found #{new_flac_paths.size} FLAC files that do not have MP3s."
-
-exceptions = []
-new_flac_paths.keys.sort.each do |flac_path|
-  mp3_path = new_flac_paths[flac_path]
-  begin
-    puts "Converting \e[33m#{flac_path}\e[0m to \e[32m#{mp3_path}\e[0m"
-    command  = "mkdir -p #{mp3_path.gsub(File.basename(mp3_path), '').dump}"
-    command << " && flac -dcs #{flac_path.dump} | lame --silent -V0 --vbr-new - #{mp3_path.dump}"
-    `#{command}`
-    raise "Exit status was #{$?.exitstatus}" if $?.exitstatus != 0
-  rescue Interrupt => exception
-    File.delete mp3_path if File.exists?(mp3_path)
-    raise exception
-  rescue Exception => exception
-    File.delete mp3_path if File.exists?(mp3_path)
-    exceptions << exception
-    puts "EXCEPTION: #{exception.class} - #{exception}"
-    puts "\tBACKTRACE:\n\t\t#{exception.backtrace.join("\n\t\t")}"
+  puts "Found #{flac_paths.size} FLAC files in #{source}"
+  
+  # Collect paths for all of the MP3 files in the destination path.
+  mp3_paths = []
+  Find.find(destination) do |path|
+    mp3_paths << path if File.extname(path).downcase == '.mp3'
+  end
+  puts "Found #{mp3_paths.size} MP3 files in #{destination}"
+  
+  # Determine which FLAC files in the source do not have corresponding MP3 files
+  # in the destination.
+  new_flac_paths = {}
+  flac_paths.each do |flac_path|
+    mp3_path = File.expand_path File.join(destination, flac_path.gsub(source, '').gsub('.flac', '.mp3'))
+    if !done.include?(mp3_path)
+      if mp3_paths.include?(mp3_path)
+        done << mp3_path
+      else
+        new_flac_paths[flac_path] = mp3_path
+      end
+    end
+  end
+  puts "Found #{new_flac_paths.size} FLAC files have not been processed."
+  
+  exceptions = []
+  new_flac_paths.keys.sort.each do |flac_path|
+    mp3_path = new_flac_paths[flac_path]
+    begin
+      puts "Converting \e[33m#{flac_path}\e[0m to \e[32m#{mp3_path}\e[0m"
+      command  = "mkdir -p #{mp3_path.gsub(File.basename(mp3_path), '').dump}"
+      command << " && flac -dcs #{flac_path.dump} | lame --silent -V0 --vbr-new - #{mp3_path.dump}"
+      `#{command}`
+      raise "Exit status was #{$?.exitstatus}" if $?.exitstatus != 0
+      done << mp3_path
+    rescue Interrupt => exception
+      File.delete mp3_path if File.exists?(mp3_path)
+      raise exception
+    rescue Exception => exception
+      File.delete mp3_path if File.exists?(mp3_path)
+      exceptions << exception
+      puts "EXCEPTION: #{exception.class} - #{exception}"
+      puts "\tBACKTRACE:\n\t\t#{exception.backtrace.join("\n\t\t")}"
+    end
+  end
+ensure
+  File.open(done_path, 'w') do |file|
+    file.write done.to_yaml
   end
 end
